@@ -46,6 +46,13 @@ namespace Proxies
 
 		}
 
+		public async Task CompleteJob (Account sender, ulong? fee, byte[] jobId,string text,string note, List<BoxRef> boxes)
+		{
+			var abiHandle = Encoding.UTF8.GetBytes("Complete");
+			var result = await base.CallApp(null, fee, AlgoStudio.Core.OnCompleteType.NoOp, 1000, note, sender,  new List<object> {abiHandle,jobId,text}, null, null,null,boxes);
+
+		}
+
 		public async Task PurgeJob (Account sender, ulong? fee, byte[] jobId,string note, List<BoxRef> boxes)
 		{
 			var abiHandle = Encoding.UTF8.GetBytes("Purge");

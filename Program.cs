@@ -4,6 +4,7 @@ using Algorand.Algod;
 using Algorand.Algod.Model;
 using Algorand.Algod.Model.Transactions;
 using Algorand.KMD;
+using Algorand.Utils;
 using AlgoStudio.Clients;
 using Proxies;
 using static TorchSharp.torch.nn;
@@ -23,20 +24,32 @@ namespace AIOracleAlgorand
 
         static async Task Main(string[] args)
         {
+            Console.WriteLine("Creating connection to Algod.");
             // Make a connection to the Algod node
             SetUpAlgodConnection();
 
+            Console.WriteLine("Obtaining KMD accounts.");
             // Set up accounts based on mnemonics
             await SetUpAccounts();
+
+
+            Console.WriteLine("Deploying on-chain AI Oracle.");
+            // Instantiate the on-chain oracle and deploy it. For demo purposes we just make a new oracle every run.
+            var oracleSmartContract = new TextClassifierOracle.TextClassifierOracle();
+            deployedApp = (await oracleSmartContract.Deploy(creator, algodApiInstance)).Value;
+
+            //Fund the app the minimum balance. It needs to participate in transactions.
+            await creator.FundContract(deployedApp,100000,algodApiInstance);
 
             // Start our AI Oracle off-chain component as a background task.
             // In reality we would normally deploy this as a separate process, job, Azure Web Job, etc.
             // For demo purposes the AI Oracle off chain component is running as part of this process.
+            Console.WriteLine("Starting off-chain AI Oracle component.");
             Task backgroundTask = Task.Factory.StartNew(() => RunServerOracle());
 
-            // Instantiate the on-chain oracle and deploy it. For demo purposes we just make a new oracle every run.
-            var oracleSmartContract = new TextClassifierOracle.TextClassifierOracle();
-            deployedApp = (await oracleSmartContract.Deploy(creator, algodApiInstance)).Value;
+            Console.WriteLine("Ready for client to request text classification. Press any key to continue...");
+            Console.ReadKey();
+
 
             // Instantiate an async wrapper for calling the oracle via Algorand
             var asyncOracleProxy = new AsyncOracleProxy(algodApiInstance, deployedApp);
@@ -48,7 +61,10 @@ namespace AIOracleAlgorand
             // Call the oracle to classify some text. The result will be stored in a box that is returned by the oracle.
             var result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you.", "");
 
-            // If the oracle server component is running we will not get a timeout and we will have a text result.
+            Console.WriteLine($"Oracle returned {result}");
+
+            Console.WriteLine("End of demo. Press any key to exit.");
+            Console.ReadKey();
 
         }
 
@@ -89,10 +105,17 @@ namespace AIOracleAlgorand
 
                                 var classification = SentimentAnalysis.Predict(sampleData);
 
-                                var sentiment = Convert.ToBoolean(classification.PredictedLabel) ? "Toxic" : "Not Toxic";
+                                var sentiment = Convert.ToBoolean(classification.PredictedLabel) ? "RESULT: Toxic" : "RESULT: Not Toxic";
 
                                 // Write the result back to the box
-                                
+                                try
+                                {
+                                    await oracleProxy.CompleteJob(creator, 1000, boxName.Name, sentiment, "", new List<BoxRef>() { new BoxRef() { App=0, Name=boxName.Name} });
+                                }
+                                catch (Exception ex)
+                                {
+
+                                }
 
                             }
 

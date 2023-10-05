@@ -107,22 +107,55 @@ namespace AIOracleAlgorand.Contracts
 
         }
 
+        /// <summary>
+        /// The contract creator (the offchain oracle) can update the job with results.
+        /// </summary>
+        /// <param name="jobId">job to update</param>
+        /// <param name="text">test classification</param>
+        [SmartContractMethod(OnCompleteType.NoOp, "Complete")]
+        public void CompleteJob(byte[] jobId, string text, AppCallTransactionReference current)
+        {
+            // verify the caller is the creator
+            AccountReference senderAccount = current.Sender;
+            byte[] senderAddress = senderAccount.Address();
+            if (senderAddress == CreatorAddress)
+            {
+                BoxSet(jobId, text.ToByteArray());
+            }
+
+
+        }
+
+        /// <summary>
+        /// The user can reclaim their deposit if the job is no longer needed.
+        /// </summary>
+        /// <param name="jobId">Job to purge.</param>
         [SmartContractMethod(OnCompleteType.NoOp, "Purge")]
         public void PurgeJob(byte[] jobId, AppCallTransactionReference current)
         {
-            // delete the box
-            BoxDel(jobId);
-
-            [InnerTransactionCall]
-            void PayCaller()
+            // verify the job caller can use that id
+            AccountReference senderAccount = current.Sender;
+            byte[] senderAddress = senderAccount.Address();
+            byte[] jobIdAddress = jobId.Part(0, 32);
+            if (jobIdAddress == senderAddress)
             {
-                new Payment(current.Sender, 1666900);
-            }
+                // delete the box
+                BoxDel(jobId);
 
-            // pay the caller their deposit back
-            PayCaller();
+                [InnerTransactionCall]
+                void PayCaller()
+                {
+                    new Payment(current.Sender, 1666900);
+                }
+
+                // pay the caller their deposit back
+                PayCaller();
+            }
         }
 
+        /// <summary>
+        /// The creator (offchain oracle) can periodically claim accumulated fees.
+        /// </summary>
         [SmartContractMethod(OnCompleteType.NoOp, "Reclaim")]
         public void ReclaimFees()
         {
@@ -139,6 +172,9 @@ namespace AIOracleAlgorand.Contracts
                 PayCreator();
             }
         }
+
+
+
 
     }
 }

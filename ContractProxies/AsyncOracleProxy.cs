@@ -45,7 +45,7 @@ namespace AIOracleAlgorand.ContractProxies
             using (CancellationTokenSource cts = new CancellationTokenSource())
             {
                 // Set the timeout
-                cts.CancelAfter(TimeSpan.FromMilliseconds(20000));  //timeout after 20 seconds for example
+                cts.CancelAfter(TimeSpan.FromMilliseconds(60000));  //timeout after 60 seconds for example
                 while (!cts.IsCancellationRequested)
                 {
                     var res = await algod.GetApplicationBoxesAsync(appId);
