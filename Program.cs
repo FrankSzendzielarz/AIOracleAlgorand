@@ -39,7 +39,7 @@ namespace AIOracleAlgorand
             deployedApp = (await oracleSmartContract.Deploy(creator, algodApiInstance)).Value;
 
             //Fund the app the minimum balance. It needs to participate in transactions.
-            await creator.FundContract(deployedApp,100000,algodApiInstance);
+            await creator.FundContract(deployedApp, 100000, algodApiInstance);
 
             // Start our AI Oracle off-chain component as a background task.
             // In reality we would normally deploy this as a separate process, job, Azure Web Job, etc.
@@ -60,8 +60,20 @@ namespace AIOracleAlgorand
 
             // Call the oracle to classify some text. The result will be stored in a box that is returned by the oracle.
             var result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you.", "");
-
             Console.WriteLine($"Oracle returned {result}");
+            depositAndFee = PaymentTransaction.GetPaymentTransactionFromNetworkTransactionParameters(user.Address, Address.ForApplication(deployedApp), 1676900, "pay message", transParams);
+            result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you 1.", "");
+            Console.WriteLine($"Oracle returned {result}");
+            depositAndFee = PaymentTransaction.GetPaymentTransactionFromNetworkTransactionParameters(user.Address, Address.ForApplication(deployedApp), 1676900, "pay message", transParams);
+            result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you 1.", "");
+            Console.WriteLine($"Oracle returned {result}");
+            depositAndFee = PaymentTransaction.GetPaymentTransactionFromNetworkTransactionParameters(user.Address, Address.ForApplication(deployedApp), 1676900, "pay message", transParams);
+            result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you 1.", "");
+            Console.WriteLine($"Oracle returned {result}");
+            depositAndFee = PaymentTransaction.GetPaymentTransactionFromNetworkTransactionParameters(user.Address, Address.ForApplication(deployedApp), 1676900, "pay message", transParams);
+            result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you 1.", "");
+            Console.WriteLine($"Oracle returned {result}");
+
 
             Console.WriteLine("End of demo. Press any key to exit.");
             Console.ReadKey();
@@ -71,22 +83,29 @@ namespace AIOracleAlgorand
 
         static async Task RunServerOracle()
         {
+
             TextClassifierOracleProxy oracleProxy = new TextClassifierOracleProxy(algodApiInstance, deployedApp);
 
             while (true)
             {
                 // Use the SDK to get all the current boxes assigned to the oracle.
                 var allBoxes = await algodApiInstance.GetApplicationBoxesAsync(deployedApp);
-                
+
                 if (allBoxes.Boxes.Count == 0)
                 {
                     await Task.Delay(1000);
-                } 
+                }
                 else
                 {
                     foreach (var boxName in allBoxes.Boxes)
                     {
-                        var box = await algodApiInstance.GetApplicationBoxByNameAsync(deployedApp, $"b64:{Convert.ToBase64String(boxName.Name)}");
+
+                        Box? box = null;
+                        try
+                        {
+                            box = await algodApiInstance.GetApplicationBoxByNameAsync(deployedApp, $"b64:{Convert.ToBase64String(boxName.Name)}");
+                        }
+                        catch { }
                         if (box != null)
                         {
                             // NOTE: In production we would need some better mechanisms to limit the amount of API calls.
@@ -108,25 +127,18 @@ namespace AIOracleAlgorand
                                 var sentiment = Convert.ToBoolean(classification.PredictedLabel) ? "RESULT: Toxic" : "RESULT: Not Toxic";
 
                                 // Write the result back to the box
-                                try
-                                {
-                                    await oracleProxy.CompleteJob(creator, 1000, boxName.Name, sentiment, "", new List<BoxRef>() { new BoxRef() { App=0, Name=boxName.Name} });
-                                }
-                                catch (Exception ex)
-                                {
-
-                                }
+                            
+                                await oracleProxy.CompleteJob(creator, 1000, boxName.Name, sentiment, "", new List<BoxRef>() { new BoxRef() { App = 0, Name = boxName.Name } });
+                       
 
                             }
-
-
-
-
                         }
                     }
                 }
 
             }
+
+
         }
 
 
