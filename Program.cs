@@ -4,10 +4,8 @@ using Algorand.Algod;
 using Algorand.Algod.Model;
 using Algorand.Algod.Model.Transactions;
 using Algorand.KMD;
-using Algorand.Utils;
 using AlgoStudio.Clients;
 using Proxies;
-using static TorchSharp.torch.nn;
 
 namespace AIOracleAlgorand
 {
@@ -61,7 +59,7 @@ namespace AIOracleAlgorand
             // Call the oracle to classify some text. The result will be stored in a box that is returned by the oracle.
             var result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you.", "");
             Console.WriteLine($"Oracle returned {result}");
-        
+
 
             Console.WriteLine("End of demo. Press any key to exit.");
             Console.ReadKey();
@@ -115,9 +113,9 @@ namespace AIOracleAlgorand
                                 var sentiment = Convert.ToBoolean(classification.PredictedLabel) ? "RESULT: Toxic" : "RESULT: Not Toxic";
 
                                 // Write the result back to the box
-                            
+
                                 await oracleProxy.CompleteJob(creator, 1000, boxName.Name, sentiment, "", new List<BoxRef>() { new BoxRef() { App = 0, Name = boxName.Name } });
-                       
+
 
                             }
                         }
