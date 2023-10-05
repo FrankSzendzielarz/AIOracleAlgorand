@@ -61,19 +61,7 @@ namespace AIOracleAlgorand
             // Call the oracle to classify some text. The result will be stored in a box that is returned by the oracle.
             var result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you.", "");
             Console.WriteLine($"Oracle returned {result}");
-            depositAndFee = PaymentTransaction.GetPaymentTransactionFromNetworkTransactionParameters(user.Address, Address.ForApplication(deployedApp), 1676900, "pay message", transParams);
-            result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you 1.", "");
-            Console.WriteLine($"Oracle returned {result}");
-            depositAndFee = PaymentTransaction.GetPaymentTransactionFromNetworkTransactionParameters(user.Address, Address.ForApplication(deployedApp), 1676900, "pay message", transParams);
-            result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you 1.", "");
-            Console.WriteLine($"Oracle returned {result}");
-            depositAndFee = PaymentTransaction.GetPaymentTransactionFromNetworkTransactionParameters(user.Address, Address.ForApplication(deployedApp), 1676900, "pay message", transParams);
-            result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you 1.", "");
-            Console.WriteLine($"Oracle returned {result}");
-            depositAndFee = PaymentTransaction.GetPaymentTransactionFromNetworkTransactionParameters(user.Address, Address.ForApplication(deployedApp), 1676900, "pay message", transParams);
-            result = await asyncOracleProxy.ClassifyText(user, 1000, depositAndFee, "I love you 1.", "");
-            Console.WriteLine($"Oracle returned {result}");
-
+        
 
             Console.WriteLine("End of demo. Press any key to exit.");
             Console.ReadKey();
