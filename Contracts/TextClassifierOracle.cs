@@ -8,8 +8,6 @@ namespace AIOracleAlgorand.Contracts
         [Storage(StorageType.Global)]
         public ulong JobIdCounter;
 
-
-
         protected override int ApprovalProgram(in AppCallTransactionReference transaction)
         {
 
@@ -45,13 +43,16 @@ namespace AIOracleAlgorand.Contracts
         }
 
         /// <summary>
-        /// Call this to reserve a text classification job. The returned id must be passed into the box references of the classify text call subsequently.
+        /// Call this to reserve a text classification job. The returned id must be passed
+        /// into the box references of the classify text call subsequently.
         /// </summary>
         /// <param name="payment">A payment to cover the job deposit and fees. MUST BE 1676900 microalgos</param>
         /// <returns>The job id the oracle will process</returns>
         [SmartContractMethod(OnCompleteType.NoOp, "Start")]
         public byte[] StartClassificationJob(PaymentTransactionReference payment, AppCallTransactionReference current)
         {
+            
+
             string pay = "pay";
 
             if (payment.TxType == pay.ToByteArray() &&
@@ -84,8 +85,6 @@ namespace AIOracleAlgorand.Contracts
             return noJob;
         }
 
-
-
         /// <summary>
         /// Call this to use a job id and wait for the oracle to classify the text. 
         /// The result will be stored back into the box for that job.
@@ -108,7 +107,7 @@ namespace AIOracleAlgorand.Contracts
         }
 
         /// <summary>
-        /// The contract creator (the offchain oracle) can update the job with results.
+        /// The contract creator (the off-chain oracle) can update the job with results.
         /// </summary>
         /// <param name="jobId">job to update</param>
         /// <param name="text">test classification</param>

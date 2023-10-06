@@ -89,7 +89,8 @@ namespace AIOracleAlgorand
                         Box? box = null;
                         try
                         {
-                            box = await algodApiInstance.GetApplicationBoxByNameAsync(deployedApp, $"b64:{Convert.ToBase64String(boxName.Name)}");
+                            box = await algodApiInstance.GetApplicationBoxByNameAsync(
+                                deployedApp, $"b64:{Convert.ToBase64String(boxName.Name)}");
                         }
                         catch { }
                         if (box != null)
@@ -112,10 +113,12 @@ namespace AIOracleAlgorand
 
                                 var sentiment = Convert.ToBoolean(classification.PredictedLabel) ? "RESULT: Toxic" : "RESULT: Not Toxic";
 
-                                // Write the result back to the box
-
+                                // Write the result back to the box for off-chain pollers
                                 await oracleProxy.CompleteJob(creator, 1000, boxName.Name, sentiment, "", new List<BoxRef>() { new BoxRef() { App = 0, Name = boxName.Name } });
 
+                                // TODO: Also extract the job caller address from the box name and invoke the 
+                                // CompleteJob method there - as the caller might have been an on-chain smart
+                                // contract that needs to know the result.
 
                             }
                         }
